@@ -25,24 +25,37 @@ func SignupUser(c *gin.Context) {
 		mail     string
 		password string
 	}
+	errorz := models.Errors{Empty: "The fields are empty"}
+	man := models.Errors{Notavailable: "This username is not available"}
+	DB := config.DBConn()
 	var data Userdata
+	var temp_user models.User
 	data.fname = c.Request.PostForm["firstname"][0]
 	data.lname = c.Request.PostForm["lastname"][0]
 	data.uname = c.Request.PostForm["username"][0]
 	data.mail = c.Request.PostForm["email"][0]
 	data.password = c.Request.PostForm["password"][0]
+
 	if data.fname == "" || data.lname == "" || data.uname == "" || data.mail == "" || data.password == "" {
-		c.Redirect(http.StatusMovedPermanently, "/signup")
-		return
-	}
-	user := models.User{First_name: data.fname, Last_name: data.lname, Username: data.uname, Email: data.mail, Password: data.password}
-	DB := config.DBConn()
-	result := DB.Create(&user)
-	if result.Error != nil {
-		c.Redirect(http.StatusMovedPermanently, "/signup")
-		return
+		tmpl := template.Must(template.ParseFiles("views/signup.html"))
+		tmpl.Execute(c.Writer, errorz)
 	} else {
-		c.Redirect(http.StatusMovedPermanently, "/login")
+		result1 := DB.First(&temp_user, "username LIKE ?", data.uname)
+		if result1.Error != nil {
+			user := models.User{First_name: data.fname, Last_name: data.lname, Username: data.uname, Email: data.mail, Password: data.password}
+			result2 := DB.Create(&user)
+			if result2.Error != nil {
+				c.Redirect(http.StatusMovedPermanently, "/signup")
+				return
+			} else {
+				c.Redirect(http.StatusMovedPermanently, "/login")
+			}
+		} else {
+
+			tmpl := template.Must(template.ParseFiles("views/signup.html"))
+			tmpl.Execute(c.Writer, man)
+		}
+
 	}
 
 }

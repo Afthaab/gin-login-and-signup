@@ -13,3 +13,8 @@ type User struct {
 	Password   string
 	IsAdmin    string `gorm:"default:null"`
 }
+
+type Errors struct {
+	Empty        string
+	Notavailable string
+}
