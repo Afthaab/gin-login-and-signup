@@ -15,6 +15,5 @@ type User struct {
 }
 
 type Errors struct {
-	Empty        string
-	Notavailable string
+	Errors        string
 }
